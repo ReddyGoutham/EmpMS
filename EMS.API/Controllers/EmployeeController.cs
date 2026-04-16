@@ -1,9 +1,11 @@
 ﻿using EMS.Application.DTOs;
 using EMS.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] // must be logged in
 public class EmployeeController : ControllerBase
 {
     private readonly IEmployeeService _service;
@@ -14,6 +16,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Add(CreateEmployeeDto dto)
     {
         var result = await _service.AddEmployeeAsync(dto);
@@ -21,6 +24,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,User")]
     public async Task<IActionResult> GetAll()
     {
         var result = await _service.GetAllEmployeesAsync();
