@@ -1,10 +1,10 @@
-﻿using EMS.Domain.Entities;
+﻿using EMS.Application.DTOs;
 
 namespace EMS.Application.Services
 {
     public interface IEmployeeService
     {
-        Task<Employee> AddEmployeeAsync(Employee employee);
-        Task<List<Employee>> GetAllEmployeesAsync();
+        Task<EmployeeResponseDto> AddEmployeeAsync(CreateEmployeeDto dto);
+        Task<List<EmployeeResponseDto>> GetAllEmployeesAsync();
     }
 }

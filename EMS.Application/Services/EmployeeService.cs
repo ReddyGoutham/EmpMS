@@ -1,4 +1,5 @@
-﻿using EMS.Domain.Entities;
+﻿using EMS.Application.DTOs;
+using EMS.Domain.Entities;
 using EMS.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,23 +14,41 @@ namespace EMS.Application.Services
             _context = context;
         }
 
-        public async Task<Employee> AddEmployeeAsync(Employee employee)
+        public async Task<EmployeeResponseDto> AddEmployeeAsync(CreateEmployeeDto dto)
         {
-            employee.CreatedAt = DateTime.UtcNow;
+            var employee = new Employee
+            {
+                Name = dto.Name,
+                Email = dto.Email,
+                Department = dto.Department,
+                Salary = dto.Salary,
+                CreatedAt = DateTime.UtcNow
+            };
 
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
 
-            return employee;
+            return new EmployeeResponseDto
+            {
+                Id = employee.Id,
+                Name = employee.Name,
+                Email = employee.Email,
+                Department = employee.Department
+            };
         }
 
-        //public async Task<List<Employee>> GetAllEmployeesAsync()
-        //{
-        //    return await _context.Employees.ToListAsync();
-        //}
-
-        public async Task<List<Employee>> GetAllEmployeesAsync() {
-            return await _context.Employees.AsNoTracking().ToListAsync();
+        public async Task<List<EmployeeResponseDto>> GetAllEmployeesAsync()
+        {
+            return await _context.Employees
+                .AsNoTracking()
+                .Select(e => new EmployeeResponseDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Email = e.Email,
+                    Department = e.Department
+                })
+                .ToListAsync();
         }
     }
 }

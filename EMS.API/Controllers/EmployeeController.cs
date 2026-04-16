@@ -1,32 +1,29 @@
-﻿using EMS.Application.Services;
-using EMS.Domain.Entities;
+﻿using EMS.Application.DTOs;
+using EMS.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EMS.API.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class EmployeeController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class EmployeeController : ControllerBase
+    private readonly IEmployeeService _service;
+
+    public EmployeeController(IEmployeeService service)
     {
-        private readonly IEmployeeService _service;
+        _service = service;
+    }
 
-        public EmployeeController(IEmployeeService service)
-        {
-            _service = service;
-        }
+    [HttpPost]
+    public async Task<IActionResult> Add(CreateEmployeeDto dto)
+    {
+        var result = await _service.AddEmployeeAsync(dto);
+        return Ok(result);
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var result = await _service.GetAllEmployeesAsync();
-            return Ok(result);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Add(Employee employee)
-        {
-            var result = await _service.AddEmployeeAsync(employee);
-            return Ok(result);
-        }
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var result = await _service.GetAllEmployeesAsync();
+        return Ok(result);
     }
 }
