@@ -1,4 +1,5 @@
-﻿using EMS.Application.DTOs;
+﻿using EMS.Application.Common;
+using EMS.Application.DTOs;
 using EMS.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -71,17 +72,39 @@ public class EmployeeController : ControllerBase
         return Ok(employee);
     }
 
-
     [HttpGet]
     public async Task<IActionResult> GetAll(
-      int page = 1,
-      int pageSize = 10,
-      string? search = null,
-      string? department = null)
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string? search = null,
+    [FromQuery] string? department = null)
     {
         var result = await _service.GetEmployeesAsync(page, pageSize, search, department);
-        return Ok(result);
+
+        var response = new ApiResponse<List<EmployeeResponseDto>>
+        {
+            Success = true,
+            Message = "Employees fetched successfully",
+            Data = result.Data,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = result.TotalCount
+        };
+
+        return Ok(response);
     }
+
+
+    //[HttpGet]
+    //public async Task<IActionResult> GetAll(
+    //  int page = 1,
+    //  int pageSize = 10,
+    //  string? search = null,
+    //  string? department = null)
+    //{
+    //    var result = await _service.GetEmployeesAsync(page, pageSize, search, department);
+    //    return Ok(result);
+    //}
 
     //[HttpGet]
     //public async Task<IActionResult> GetAll(

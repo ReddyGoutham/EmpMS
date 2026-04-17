@@ -13,12 +13,10 @@ namespace EMS.Application.Services
 
         Task<EmployeeResponseDto> GetEmployeeByIdAsync(int id);
 
-        Task<List<EmployeeResponseDto>> GetEmployeesAsync(
-     int page,
-     int pageSize,
-     string? search,
-     string? department);
-
-        //Task<List<EmployeeResponseDto>> GetEmployeesAsync(int page, int pageSize, string? search, string? department);
+        Task<(List<EmployeeResponseDto> Data, int TotalCount)> GetEmployeesAsync(
+    int page,
+    int pageSize,
+    string? search,
+    string? department);
     }
 }

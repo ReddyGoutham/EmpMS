@@ -99,7 +99,42 @@ namespace EMS.Application.Services
             };
         }
 
-        public async Task<List<EmployeeResponseDto>> GetEmployeesAsync(
+        //    public async Task<List<EmployeeResponseDto>> GetEmployeesAsync(
+        //int page,
+        //int pageSize,
+        //string? search,
+        //string? department)
+        //    {
+        //        var query = _context.Employees.AsQueryable();
+
+        //        if (!string.IsNullOrEmpty(search))
+        //        {
+        //            query = query.Where(e => e.Name.Contains(search));
+        //        }
+
+        //        if (!string.IsNullOrEmpty(department))
+        //        {
+        //            query = query.Where(e => e.Department == department);
+        //        }
+
+        //        var employees = await query
+        //            .Skip((page - 1) * pageSize)
+        //            .Take(pageSize)
+        //            .AsNoTracking()
+        //            .Select(e => new EmployeeResponseDto
+        //            {
+        //                Id = e.Id,
+        //                Name = e.Name,
+        //                Email = e.Email,
+        //                Department = e.Department
+        //            })
+        //            .ToListAsync();
+
+        //        return employees;
+        //    }
+
+
+        public async Task<(List<EmployeeResponseDto> Data, int TotalCount)> GetEmployeesAsync(
     int page,
     int pageSize,
     string? search,
@@ -108,19 +143,17 @@ namespace EMS.Application.Services
             var query = _context.Employees.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
-            {
                 query = query.Where(e => e.Name.Contains(search));
-            }
 
             if (!string.IsNullOrEmpty(department))
-            {
                 query = query.Where(e => e.Department == department);
-            }
 
-            var employees = await query
+            var totalCount = await query.CountAsync();
+
+            var data = await query
+                .AsNoTracking()
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .AsNoTracking()
                 .Select(e => new EmployeeResponseDto
                 {
                     Id = e.Id,
@@ -130,7 +163,7 @@ namespace EMS.Application.Services
                 })
                 .ToListAsync();
 
-            return employees;
+            return (data, totalCount);
         }
     }
 }
