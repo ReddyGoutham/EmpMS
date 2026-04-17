@@ -30,4 +30,10 @@ public class EmployeeController : ControllerBase
         var result = await _service.GetAllEmployeesAsync();
         return Ok(result);
     }
+
+    [HttpGet("test-error")]
+    public IActionResult TestError()
+    {
+        throw new Exception("This is a test exception");
+    }
 }

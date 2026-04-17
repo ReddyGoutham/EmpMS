@@ -1,11 +1,12 @@
+using EMS.API.Middleware;
 using EMS.Application.Services;
+using EMS.Domain.Entities;
 using EMS.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using EMS.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +57,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(key)
         };
+
+        //options.TokenValidationParameters = new TokenValidationParameters
+        //{
+        //    ValidateIssuer = false,
+        //    ValidateAudience = false,
+        //    ValidateLifetime = true,
+        //    ValidateIssuerSigningKey = true,
+        //    IssuerSigningKey = new SymmetricSecurityKey(key)
+        //};
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine("AUTH FAILED: " + context.Exception.Message);
+                return Task.CompletedTask;
+            }
+        };
     });
 
 // EF Core
@@ -68,6 +87,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
+
+
 // Seed data
 await SeedUser(app);
 
@@ -79,6 +101,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -97,16 +120,37 @@ async Task SeedUser(WebApplication app)
     if (context.Users.Any())
         return;
 
+    //var hasher = new PasswordHasher<User>();
+
+    //var user = new User
+    //{
+    //    Email = "admin@test.com",
+    //    Role = "Admin"
+    //};
+
+    //user.PasswordHash = hasher.HashPassword(user, "123456");
+
+    //context.Users.Add(user);
+    //await context.SaveChangesAsync();
+
     var hasher = new PasswordHasher<User>();
 
-    var user = new User
+    // Admin
+    var admin = new User
     {
         Email = "admin@test.com",
         Role = "Admin"
     };
+    admin.PasswordHash = hasher.HashPassword(admin, "123456");
 
+    // Normal User
+    var user = new User
+    {
+        Email = "user@test.com",
+        Role = "User"
+    };
     user.PasswordHash = hasher.HashPassword(user, "123456");
 
-    context.Users.Add(user);
+    context.Users.AddRange(admin, user);
     await context.SaveChangesAsync();
 }
