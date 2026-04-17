@@ -50,5 +50,87 @@ namespace EMS.Application.Services
                 })
                 .ToListAsync();
         }
+
+        public async Task<bool> UpdateEmployeeAsync(int id, UpdateEmployeeDto dto)
+        {
+            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (employee == null)
+                return false;
+
+            employee.Name = dto.Name;
+            employee.Email = dto.Email;
+            employee.Department = dto.Department;
+            employee.Salary = dto.Salary;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteEmployeeAsync(int id)
+        {
+            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (employee == null)
+                return false;
+
+            _context.Employees.Remove(employee);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<EmployeeResponseDto> GetEmployeeByIdAsync(int id)
+        {
+            var employee = await _context.Employees
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (employee == null)
+                return null;
+
+            return new EmployeeResponseDto
+            {
+                Id = employee.Id,
+                Name = employee.Name,
+                Email = employee.Email,
+                Department = employee.Department
+            };
+        }
+
+        public async Task<List<EmployeeResponseDto>> GetEmployeesAsync(
+    int page,
+    int pageSize,
+    string? search,
+    string? department)
+        {
+            var query = _context.Employees.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(e => e.Name.Contains(search));
+            }
+
+            if (!string.IsNullOrEmpty(department))
+            {
+                query = query.Where(e => e.Department == department);
+            }
+
+            var employees = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .AsNoTracking()
+                .Select(e => new EmployeeResponseDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Email = e.Email,
+                    Department = e.Department
+                })
+                .ToListAsync();
+
+            return employees;
+        }
     }
 }
